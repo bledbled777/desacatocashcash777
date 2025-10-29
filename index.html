@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>aimbotbled</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&display=swap" ="stylesheet">
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Fira Code', monospace;
+  background-color: #0a0a0a;
+  color: #f2f2f2;
+  overflow: hidden;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Fundo neural */
+#neural-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+/* Container de login */
+.login-container {
+  position: ative;
+  z-index: 10;
+  background-color: rgba(25, 25, 25, 0.95);
+  border: 2px solid #000;
+  border-radius: 12px;
+  width: 340px;
+  height: 300px;
+  box-shadow: 0 0 20px rgba(255,255,255,0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.login-container h2 {
+  color: #fff;
+  margin-bottom: 25px;
+  text-align: center;
+  text-shadow: 1px 1px 2px #000;
+}
+
+.login-input {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  background-color: #1a1a1a;
+  border: 1px solid #000;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 14px;
+}
+
+.login-input:focus {
+  outline: none;
+  border-color: #888;
+}
+
+.login-btn {
+  width: 100%;
+  padding: 12px;
+  background-color: #333;
+  border: 1px solid #000;
+  border-radius: 6px;
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.login-btn:hover {
+  background-color: #555;
+}
+
+.login-error {
+  color: #ff4444;
+  margin-top: 10px;
+  text-align: center;
+  font-size: 14px;
+  display: none;
+}
+
+/* Painel principal */
+.painel {
+  position: relative;
+  z-index: 2;
+  background-color: rgba(25, 25, 25, 0.95);
+  border: 2px solid #000;
+  border-radius: 12px;
+  width: 340px;
+  height: 540px;
+  box-shadow: 0 0 25px rgba(255,255,255,0.08);
+  display: none;
+  flex-direction: column;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  justify-content: space-around;
+  background-color: #111;
+  border-bottom: 2px solid #000;
+  font-size: 15px;
+}
+
+.tab {
+  flex: 1;
+  text-align: center;
+  padding: 10px 0;
+  cursor: pointer;
+  transition: 0.3s;
+  user-select: none;
+  border-right: 1px solid #000;
+  color: #ccc;
+}
+
+.tab:last-child {
+  border-right: none;
+}
+
+.tab:hover {
+  background-color: #333;
+  color: #fff;
+}
+
+.tab.active {
+  background-color: #444;
+  color: #fff;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px #000;
+}
+
+/* Conteúdo */
+.conteudo {
+  display: none;
+  padding: 18px 20px;
+  overflow-y: auto;
+  flex-grow: 1;
+}
+
+.conteudo.active {
+  display: block;
+}
+
+/* Opções */
+.opcao {
+  background-color: #1c1c1c;
+  border: 1px solid #000;
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  transition: 0.3s;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  font-size: 15px;
+  color: #ddd;
+}
+
+.opcao:hover {
+  background-color: #2a2a2a;
+}
+
+.opcao.ativa {
+  background-color: #444;
+  border: 1px solid #000;
+  color: #fff;
+}
+
+/* Toggle */
+.toggle {
+  width: 42px;
+  height: 20px;
+  border-radius: 15px;
+  background-color: #555;
+  position: relative;
+  transition: 0.3s;
+  border: 1px solid #000;
+}
+
+.toggle::before {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background-color: #fff;
+  transition: 0.3s;
+  border: 1px solid #000;
+}
+
+.opcao.ativa .toggle {
+  background-color: #aaa;
+}
+
+.opcao.ativa .toggle::before {
+  transform: translateX(21px);
+}
+
+/* FOV */
+.fov-container {
+  margin-top: 15px;
+  padding: 10px 0;
+  border-top: 1px solid #000;
+}
+
+.fov-label {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #bbb;
+}
+
+.fov-slider {
+  width: 100%;
+  height: 6px;
+  border-radius: 5px;
+  background: #444;
+  outline: none;
+  -webkit-appearance: none;
+  border: 1px solid #000;
+}
+
+.fov-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ccc;
+  cursor: pointer;
+  border: 1px solid #000;
+}
+
+.fov-value {
+  color: #fff;
+  font-weight: bold;
+}
+
+/* Botão principal */
+.freefire-btn {
+  width: 100%;
+  padding: 12px;
+  background-color: #222;
+  border: 1px solid #000;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.3s;
+  margin-top: 10px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.freefire-btn:hover {
+  background-color: #444;
+  box-shadow: 0 0 10px rgba(255,255,255,0.2);
+}
+
+/* Scrollbar */
+.conteudo::-webkit-scrollbar {
+  width: 5px;
+}
+
+.conteudo::-webkit-scrollbar-thumb {
+  background-color: #444;
+  border-radius: 5px;
+  border: 1px solid #000;
+}
+</style>
+</head>
+<body>
+
+<canvas id="neural-bg"></canvas>
+
+<div class="login-container" id="loginScreen">
+  <h2>desacato</h2>
+  <input type="text" class="login-input" id="username" placeholder="Usuário" autocomplete="off">
+  <input type="password" class="login-input" id="password" placeholder="Senha" autocomplete="off">
+  <button class="login-btn" onclick="login()">Entrar</button>
+  <div class="login-error" id="loginError">Credenciais inválidas!</div>
+</div>
+
+<div class="painel" id="mainPanel">
+  <div class="tabs">
+    <div class="tab active" onclick="abrirTab(0)">aimbot</div>
+    <div class="tab" onclick="abrirTab(1)">optimization</div>
+    <div class="tab" onclick="abrirTab(2)">info</div>
+  </div>
+
+  <div class="conteudo active" data-tab="0">
+    <div class="opcao" data-nome="aim drag" onclick="toggleAtivar(this)"><span>aim drag</span><div class="toggle"></div></div>
+    <div class="opcao" data-nome="aimbot legit" onclick="toggleAtivar(this)"><span>aimbot legit</span><div class="toggle"></div></div>
+    <div class="opcao" data-nome="priorizar cabeça" onclick="toggleAtivar(this)"><span>priorizar cabeça</span><div class="toggle"></div></div>
+    <div class="opcao" data-nome="aim fire" onclick="toggleAtivar(this)"><span>aimlock</span><div class="toggle"></div></div>
+    <div class="opcao" data-nome="aim scope" onclick="toggleAtivar(this)"><span>aim scope</span><div class="toggle"></div></div>
+
+    <div class="fov-container">
+      <div class="fov-label">
+        <span>fov</span>
+        <span class="fov-value" id="fovValue">180</span>
+      </div>
+      <input type="range" min="0" max="360" value="180" class="fov-slider" id="fovSlider" oninput="updateFOV(this.value)">
+    </div>
+
+    <button class="freefire-btn" onclick="abrirFreeFire()">INJETAR FUNÇÕES NO JOGO</button>
+  </div>
+
+  <div class="conteudo" data-tab="1">
+    <div class="opcao" data-nome="forçar 144fps" onclick="toggleAtivar(this)"><span>forçar 144fps</span><div class="toggle"></div></div>
+    <div class="opcao" data-nome="cravar fps" onclick="toggleAtivar(this)"><span>cravar fps</span><div class="toggle"></div></div>
+    <div class="opcao" data-nome="suavizar toques" onclick="toggleAtivar(this)"><span>suavizar toques</span><div class="toggle"></div></div>
+    <div class="opcao" data-nome="otimizar gráficos" onclick="toggleAtivar(this)"><span>otimizar gráficos</span><div class="toggle"></div></div>
+    <div class="opcao" data-nome="calibrar heartz" onclick="toggleAtivar(this)"><span>calibrar heartz</span><div class="toggle"></div></div>
+  </div>
+
+  <div class="conteudo" data-tab="2">
+    <p class="info">criado por aimbotbled 🩶</p>
+  </div>
+</div>
+
+<script>
+function login() {
+  const username = document.getElementById('username').value;
+  const password = document.getElementById('password').value;
+  const errorElement = document.getElementById('loginError');
+  
+  if (username === 'aimbot' && password ===  'ffz') {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('mainPanel').style.display = 'flex';
+  } else {
+    errorElement.style.display = 'block';
+  }
+}
+
+document.getElementById('password').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') login();
+});
+
+const estados = {};
+function abrirTab(index) {
+  document.querySelectorAll('.tab').forEach((tab,i)=>{
+    tab.classList.toggle('active', i===index);
+  });
+  document.querySelectorAll('.conteudo').forEach((c,i)=>{
+    c.classList.toggle('active', i===index);
+  });
+}
+
+function toggleAtivar(element){
+  const nome = element.getAttribute('data-nome');
+  element.classList.toggle('ativa');
+  estados[nome] = element.classList.contains('ativa');
+}
+
+function updateFOV(value) {
+  document.getElementById('fovValue').textContent = value;
+}
+
+function abrirFreeFire() {
+  const freeFireDeeplink = "freefire://";
+  window.location.href = freeFireDeeplink;
+  setTimeout(() => {
+    if (/Android/i.test(navigator.userAgent))
+      window.location.href = "https://play.google.com/store/apps/details?id=com.dts.freefireth";
+    else if (/iPhone|iPad|iPod/i.test(navigator.userAgent))
+      window.location.href = "https://apps.apple.com/app/id1300146617";
+  }, 1000);
+}
+
+/* Fundo animado */
+const canvas = document.getElementById('neural-bg');
+const ctx = canvas.getContext('2d');
+let width, height;
+const nodes = [];
+const NODE_COUNT = 50;
+
+function resizeCanvas(){
+  width = canvas.width = window.innerWidth;
+  height = canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+for(let i=0;i<NODE_COUNT;i++){
+  nodes.push({
+    x: Math.random()*width,
+    y: Math.random()*height,
+    vx: (Math.random()-0.5)*0.5,
+    vy: (Math.random()-0.5)*0.5
+  });
+}
+
+function draw(){
+  ctx.clearRect(0,0,width,height);
+  ctx.fillStyle = '#bbb';
+  ctx.globalAlpha = 0.6;
+  for(let i=0;i<NODE_COUNT;i++){
+    for(let j=i+1;j<NODE_COUNT;j++){
+      const dx = nodes[i].x - nodes[j].x;
+      const dy = nodes[i].y - nodes[j].y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if(dist<150){
+        ctx.strokeStyle = 'rgba(200,200,200,'+(1-dist/150)+')';
+        ctx.beginPath();
+        ctx.moveTo(nodes[i].x,nodes[i].y);
+        ctx.lineTo(nodes[j].x,nodes[j].y);
+        ctx.stroke();
+      }
+    }
+  }
+  for(let i=0;i<NODE_COUNT;i++){
+    const n=nodes[i];
+    n.x+=n.vx; n.y+=n.vy;
+    if(n.x<0||n.x>width) n.vx*=-1;
+    if(n.y<0||n.y>height) n.vy*=-1;
+    ctx.beginPath();
+    ctx.arc(n.x,n.y,2,0,Math.PI*2);
+    ctx.fill();
+  }
+  requestAnimationFrame(draw);
+}
+draw();
+</script>
+</body>
+</html>
